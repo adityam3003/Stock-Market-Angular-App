@@ -1,0 +1,738 @@
+<div class="mat-display-3" style="margin-top: 2.5em">STOCK SEARCH</div>
+<form (ngSubmit)="onSubmit($event)">
+    <div class="form-group" style="min-width: 15em; width: 25%">
+        <input type="text" class="form-control" matInput (input)="callAutocomplete($event)" id="inputticker" placeholder="Enter stock name" [matAutocomplete]="auto"
+            [formControl]="myFormControl" autocomplete="off" [(ngModel)]="tickerValue"/>
+        <mat-autocomplete class="matAutocomplete" #auto="matAutocomplete" [panelWidth]="230"
+            [displayWith]="formDisplay">
+            <mat-option *ngIf="!isLoaded && inputTxt !== '' && !objectOptions">
+                <mat-spinner diameter="20"></mat-spinner>
+            </mat-option>
+            <div *ngIf="isLoaded">
+                <mat-option *ngFor="let option of objectOptions" [value]="option.displaySymbol"
+                    (click)="onSubmit($event)">
+                    <span style="font-size: normal">{{ option?.displaySymbol }}</span><span
+                        style="font-size: small">&nbsp;|&nbsp;{{ option?.description }}</span>
+                </mat-option>
+            </div>
+        </mat-autocomplete>
+        <button type="submit" class="mat-button">
+            <svg width="1em" height="1em" viewBox="-0.5 -0.2 16.2 16.2" class="bi bi-search" fill="#673ab7"
+                xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd"
+                    d="M10.442 10.442a1 1 0 0 1 1.415 0l3.85 3.85a1 1 0 0 1-1.414 1.415l-3.85-3.85a1 1 0 0 1 0-1.415z" />
+                <path fill-rule="evenodd"
+                    d="M6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM13 6.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z" />
+            </svg>
+        </button>
+        <button type="reset" class="mat-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="2.1em" height="2.1em" fill="#1E209B" class="bi bi-x"
+                viewBox="0.2 0.2 16.2 16.2" (click)="reset()">
+                <path fill-rule="evenodd"
+                    d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
+            </svg>
+        </button>
+    </div>
+</form>
+
+<div>
+    <!--for fb share-->
+    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v8.0"
+        nonce="ukxsjSKE"></script>
+    <div *ngIf="isFirstCall && isTValid && !isAllLoaded && !isSearched">
+        <br />
+        <mat-spinner style="margin-left: auto; margin-right: auto; margin-top: 1em" diameter="50"></mat-spinner>
+    </div>
+    <div class="w-responsive text-center mx-auto" id="my-master-container">
+        <div *ngIf="rmInWl" class="alert alert-danger alert-dismissible fade show mat-body-1 mt-3" id="rmWl" role="alert">
+			{{ desc?.ticker }} removed from Watchlist.
+			<button type="button" class="close" data-dismiss="alert" aria-label="Close" (click)="closeAlert('rmWl')">
+				<span aria-hidden="true">&times;</span>
+			</button>
+		</div>
+		<div *ngIf="rmInPf" class="alert alert-danger alert-dismissible fade show mat-body-1 mt-3" id="rmPf" role="alert">
+			{{ desc?.ticker }} sold successfully.
+			<button type="button" class="close" data-dismiss="alert" aria-label="Close" (click)="closeAlert('rmPf')">
+				<span aria-hidden="true">&times;</span>
+			</button>
+		</div>
+		<div *ngIf="addInPf" class="alert alert-success alert-dismissible fade show mat-body-1 mt-3" id="addPf" role="alert">
+			{{ desc?.ticker }} bought successfully!
+			<button type="button" class="close" data-dismiss="alert" aria-label="Close" (click)="closeAlert('addPf')">
+				<span aria-hidden="true">&times;</span>
+			</button>
+		</div>
+		<div *ngIf="addInWl" class="alert alert-success alert-dismissible fade show mat-body-1 mt-3" id="addWl" role="alert">
+			{{ desc?.ticker }} added to Watchlist.
+			<button type="button" class="close" data-dismiss="alert" aria-label="Close" (click)="closeAlert('addWl')">
+				<span aria-hidden="true">&times;</span>
+			</button>
+		</div>
+        <div *ngIf="isTValid && isAllLoaded">
+            <div class="container mat-typography w-auto d-xl-block d-md-block d-lg-block d-sm-none d-xs-none deskContent">
+                <div class="row myrow1">
+                    <div class="col toLeft col-xl-5 col-lg-5 col-md-5 col-sm-5 col-xs-5" id="ticker-col">
+                        <div class="tickerStar">
+                            <p class="text-left mat-display-1" id="ticker">
+                                {{ desc?.ticker }}&nbsp;
+                            </p>
+                            <i id="starIcon" (click)="setOrRemoveFrmWl()">
+                                <svg *ngIf="!isInWL" width="1.9em" height="1.9em" viewBox="0 0 16 16"
+                                    class="bi bi-star align-top" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="margin-top: 0.15em;">
+                                    <path fill-rule="evenodd"
+                                        d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.523-3.356c.329-.314.158-.888-.283-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767l-3.686 1.894.694-3.957a.565.565 0 0 0-.163-.505L1.71 6.745l4.052-.576a.525.525 0 0 0 .393-.288l1.847-3.658 1.846 3.658a.525.525 0 0 0 .393.288l4.052.575-2.906 2.77a.564.564 0 0 0-.163.506l.694 3.957-3.686-1.894a.503.503 0 0 0-.461 0z" />
+                                </svg>
+                                <svg *ngIf="isInWL" width="1.9em" height="1.9em" viewBox="0 0 16 16"
+                                    class="bi bi-star-fill align-top" fill="#fdd50b" xmlns="http://www.w3.org/2000/svg" style="margin-top: 0.15em;">
+                                    <path
+                                        d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.283.95l-3.523 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z" />
+                                </svg>
+                            </i>
+                        </div>
+                        <p class="text-left text-secondary mat-headline" id="compName">
+                            {{ desc?.name }}
+                        </p>
+
+                        <p class="text-left mat-body-2" id="exchangeCode">
+                            {{ desc?.exchange }}
+                        </p>
+                    </div>
+                    <div class="col toCenter col-xl-2 col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                        <img src="{{ desc.logo }}" style="height: auto; width: auto; max-height: 5em; max-width: 5em" />
+                    </div>
+                    <div class="col toRight col-xl-5 col-lg-5 col-md-5 col-sm-5 col-xs-5">
+                        <p *ngIf="!latestPrice.c" class="text-right mat-display-1" id="last">
+                            &nbsp;-
+                        </p>
+                        <div class="rightCol">
+                            <p *ngIf="latestPrice.c && latestPrice.d > 0" class="text-right mat-display-1 text-success"
+                                id="last">
+                                {{ latestPrice?.c | number: "1.2-2" }}
+                            </p>
+                            <p *ngIf="latestPrice.c && latestPrice.d < 0" class="text-right mat-display-1 text-danger"
+                                id="last">
+                                {{ latestPrice?.c | number: "1.2-2" }}
+                            </p>
+                            <p *ngIf="latestPrice.c && latestPrice.d == 0" class="text-right mat-display-1" id="last">
+                                {{ latestPrice?.c | number: "1.2-2" }}
+                            </p>
+                            <svg *ngIf="latestPrice.d > 0" width="1em" height="1em" viewBox="0 0 16 16"
+                                class="bi bi-caret-up-fill align-baseline text-success" fill="currentColor"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M7.247 4.86l-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z" />
+                            </svg>
+                            <svg *ngIf="latestPrice.d < 0" width="1em" height="1em" viewBox="0 0 16 16"
+                                class="bi bi-caret-down-fill align-baseline text-danger" fill="currentColor"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
+                            </svg>
+                            <p *ngIf="!latestPrice.c || !latestPrice.pc" class="text-right mat-headline"
+                                id="changeAndAllP">
+                                &nbsp;-
+                            </p>
+                            <p *ngIf="latestPrice.c && latestPrice.pc && latestPrice.d > 0"
+                                class="text-right mat-headline text-success" id="changeAndAllP">
+                                &nbsp;{{ latestPrice.d | number: "1.2-2" }} ({{
+                                latestPrice.dp | number: "1.2-2"
+                                }})%
+                            </p>
+                            <p *ngIf="latestPrice.c && latestPrice.pc && latestPrice.d < 0"
+                                class="text-right mat-headline text-danger" id="changeAndAllP">
+                                &nbsp;{{ latestPrice.d | number: "1.2-2" }} ({{
+                                latestPrice.dp | number: "1.2-2"
+                                }})%
+                            </p>
+                            <p *ngIf="latestPrice.c && latestPrice.pc && latestPrice.d == 0"
+                                class="text-right mat-headline" id="changeAndAllP">
+                                &nbsp;{{ latestPrice.d | number: "1.2-2" }} ({{
+                                latestPrice.dp | number: "1.2-2"
+                                }})%
+                            </p>
+
+                            <p class="text-right mat-body-2" id="currentTime">
+                                {{ today }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div
+                class="container mat-typography w-auto d-xl-none d-md-none d-lg-none d-sm-block d-xs-block phoneContent">
+                <div class="d-flex justify-content-around row myrow1">
+
+                    <div class="col toLeft col-xl-5 col-lg-5 col-md-5 col-sm-5 col-xs-5" id="ticker-col"
+                        style="min-width:5.5em">
+                        <div class="tickerStar">
+                            <p class="text-left mat-display-1" id="ticker1">
+                                {{ desc?.ticker }}&nbsp;
+                            </p>
+                            <i id="starIcon" (click)="setOrRemoveFrmWl()">
+                                <svg *ngIf="!isInWL" width="1.5em" height="1.5em" viewBox="0 0 16 16"
+                                    class="bi bi-star align-top" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd"
+                                        d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.523-3.356c.329-.314.158-.888-.283-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767l-3.686 1.894.694-3.957a.565.565 0 0 0-.163-.505L1.71 6.745l4.052-.576a.525.525 0 0 0 .393-.288l1.847-3.658 1.846 3.658a.525.525 0 0 0 .393.288l4.052.575-2.906 2.77a.564.564 0 0 0-.163.506l.694 3.957-3.686-1.894a.503.503 0 0 0-.461 0z" />
+                                </svg>
+                                <svg *ngIf="isInWL" width="1.5em" height="1.6em" viewBox="0 0 16 16"
+                                    class="bi bi-star-fill align-top" fill="#fdd50b" xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.283.95l-3.523 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z" />
+                                </svg>
+                            </i>
+                        </div>
+                        <p class="text-left text-secondary mat-headline text-nowrap" id="compName1">
+                            {{ desc?.name }}
+                        </p>
+
+                        <p class="text-left mat-body-2" id="exchangeCode1">
+                            {{ desc?.exchange }}
+                        </p>
+                    </div>
+                    <div class="col toCenter col-xl-2 col-lg-2 col-md-2 col-sm-2 col-xs-2" id="logo1">
+                        <img src={{desc.logo}} style="height: 4.5em; width: 4,5em; margin-left: 20px;">
+                    </div>
+                    <div class="col toRight col-xl-5 col-lg-5 col-md-5 col-sm-5 col-xs-5">
+                        <p *ngIf="!(latestPrice.c)" class="text-right mat-display-1" id="last1">
+                            &nbsp;-
+                        </p>
+                        <div class="rightCol">
+
+                            <p *ngIf="latestPrice.c && (latestPrice.d>0)" class="text-right mat-display-1 text-success"
+                                id="last1">
+                                {{ latestPrice?.c | number:'1.2-2' }}
+                            </p>
+                            <p *ngIf="latestPrice.c && (latestPrice.d<0)" class="text-right mat-display-1 text-danger"
+                                id="last1">
+                                {{ latestPrice?.c | number:'1.2-2' }}
+                            </p>
+                            <p *ngIf="latestPrice.c && (latestPrice.d==0)" class="text-right mat-display-1" id="last1">
+                                {{ latestPrice?.c | number:'1.2-2' }}
+                            </p>
+                            <div class="line text-nowrap">
+
+                                <svg *ngIf="latestPrice.d>0" width="1em" height="1em" viewBox="0 0 16 16"
+                                    class="bi bi-caret-up-fill align-baseline text-success" fill="currentColor"
+                                    xmlns="http://www.w3.org/2000/svg" id="changeAndAllP1">
+                                    <path
+                                        d="M7.247 4.86l-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z" />
+                                </svg>
+                                <svg *ngIf="latestPrice.d<0" width="1em" height="1em" viewBox="0 0 16 16"
+                                    class="bi bi-caret-down-fill align-baseline text-danger" fill="currentColor"
+                                    xmlns="http://www.w3.org/2000/svg" id="changeAndAllP1">
+                                    <path
+                                        d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
+                                </svg>
+                                <p *ngIf="!(latestPrice.c) || !(latestPrice.pc)" class="text-right mat-headline"
+                                    id="changeAndAllP1">
+
+                                </p>
+                                <p *ngIf="(latestPrice.c && latestPrice.pc) && (latestPrice.d>0)"
+                                    class="text-right mat-headline text-success" id="changeAndAllP1">
+                                    {{ latestPrice.d | number:'1.2-2' }} ({{latestPrice.dp | number: '1.2-2'}}%)
+                                </p>
+                                <p *ngIf="(latestPrice.c && latestPrice.pc) && (latestPrice.d<0)"
+                                    class="text-right mat-headline text-danger" id="changeAndAllP1">
+                                    {{ latestPrice.d | number:'1.2-2' }} ({{latestPrice.dp | number: '1.2-2'}}%)
+                                </p>
+                                <p *ngIf="(latestPrice.c && latestPrice.pc) && (latestPrice.d==0)"
+                                    class="text-right mat-headline" id="changeAndAllP1">
+                                    {{ latestPrice.d | number:'1.2-2' }} ({{latestPrice.dp | number: '1.2-2'}}%)
+                                </p>
+                            </div>
+
+                            <p class="text-right mat-body-2" id="currentTime1" style="display: inline-block;">
+                                {{ today }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-left mb-3" id="buy">
+				&nbsp;&nbsp;
+                <button type="button" class="btn btn-success" (click)="openBuyModal(buycontent)">
+                    Buy
+                </button>
+                <button [hidden]="!isBought" type="button" class="btn btn-danger" id="sell"
+                    (click)="openSellModal(sellcontent, desc.ticker)">
+                    Sell
+                </button>
+            </div>
+            <div *ngIf="timeDiff < 60" id="openclose" class="alert text-success mat-body-1" role="alert">
+                Market is Open
+            </div>
+            <div *ngIf="timeDiff >= 60" id="openclose" class="alert text-danger mat-body-1" role="alert">
+                Market Closed on {{ mrktClsDT }}
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <mat-tab-group mat-align-tabs="center" mat-stretch-tabs animationDuration="0ms">
+                        <mat-tab label="Summary">
+                            <ng-template matTabContent>
+                                <div class="container-fluid pl-0 pr-0 text-middle mat-typography" xe>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="container mt-0">
+                                                <div class="row pl-lg-4 pl-xl-5" id="priceSummary">
+                                                    <div class="container2 mx-auto mt-sm-2 pr-0">
+                                                        <div class="row mx-auto">
+                                                            <div class="col text-left mat-body-1">
+                                                                <b>High Price:&nbsp;&nbsp;</b>
+                                                                <p *ngIf="!latestPrice.h" id="high">&nbsp;-</p>
+                                                                <p *ngIf="latestPrice.h" id="high">
+                                                                    {{ latestPrice?.h | number: "1.2-2" }}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row mx-auto">
+                                                            <div class="col text-left mat-body-1">
+                                                                <b>Low Price:&nbsp;&nbsp;&nbsp;</b>
+                                                                <p *ngIf="!latestPrice.l" id="low">&nbsp;-</p>
+                                                                <p *ngIf="latestPrice.l" id="low">
+                                                                    {{ latestPrice?.l | number: "1.2-2" }}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row mx-auto">
+                                                            <div class="col text-left mat-body-1">
+                                                                <b>Open Price:&nbsp;</b>
+                                                                <p *ngIf="!latestPrice.o" id="open">&nbsp;-</p>
+                                                                <p *ngIf="latestPrice.o" id="open">
+                                                                    {{ latestPrice?.o | number: "1.2-2" }}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row mx-auto">
+                                                            <div class="col text-left mat-body-1">
+                                                                <b>Prev. Close:&nbsp;</b>
+                                                                <p *ngIf="!latestPrice.pc" id="prevClose">
+                                                                    &nbsp;-
+                                                                </p>
+                                                                <p *ngIf="latestPrice.pc" id="prevClose">
+                                                                    {{ latestPrice?.pc | number: "1.2-2" }}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+												<div class="row mt-5" style="
+												text-decoration: underline;">
+													<div class="col mat-headline" id="descHead">
+														<b>About the company</b>
+													</div>
+												</div>
+												<div class="row mx-auto">
+													<div class="col text-left mat-body-1"><b>IPO Start Date:&nbsp;</b>
+														<p id="open">
+															<!--28.295-->{{ desc?.ipo }}
+														</p>
+													</div>
+												</div>
+												<div class="row mx-auto">
+													<div class="col text-left mat-body-1"><b>Industry :&nbsp;</b>
+														<p id="open">
+															<!--28.295-->{{ desc?.finnhubIndustry }}
+														</p>
+													</div>
+												</div>
+												<div class="row mx-auto">
+													<div class="col text-left mat-body-1"><b>Webpage :&nbsp;</b>
+														<!--28.295--><a href={{desc.weburl}}>{{ desc?.weburl }}</a>
+													</div>
+												</div>
+												<div class="row mx-auto">
+													<div class="col text-left mat-body-1"><b>Company Peers:&nbsp;</b>
+													</div>
+												</div>
+	
+												<div class="row mx-auto" style="overflow-wrap:anywhere;">
+													<div class="col text-left mat-body-1">
+														<span *ngFor="let p of peers">
+															<a href="../search/{{ p }}" style="text-decoration:none">{{ p }}</a> ,
+														</span>
+	
+													</div>
+												</div>
+	
+	
+	
+                                                <!-- <div class="row mt-5">
+                                                    <div class="col mat-headline" id="descHead">
+                                                        <b><u>About the company</u></b>
+                                                    </div>
+                                                </div>
+                                                <div class="row pl-1 pr-1">
+                                                    <b>IPO Start Date:</b> &nbsp;{{ desc?.ipo }}
+                                                </div>
+                                                <br />
+                                                <div class="row pl-1 pr-1">
+                                                    <b>Industry:</b> &nbsp;{{ desc?.finnhubIndustry }}
+                                                </div>
+                                                <br />
+                                                <div class="row pl-1 pr-1">
+                                                    <b>Webpage:</b> &nbsp;<a href="{{ desc?.weburl }}"
+                                                        target="_blank">{{ desc?.weburl }}</a>
+                                                </div>
+                                                <br />
+                                                <div class="row pl-1 pr-1">
+                                                    <b>Company Peers:</b>
+                                                </div>
+                                                <br />
+                                                <div class="row pl-1 pr-1">
+                                                    <p *ngFor="let p of peers">
+                                                        <a href="../search/{{ p }}">{{ p }}</a> ,
+                                                    </p>
+                                                </div> -->
+                                                <br />
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="container-fluid">
+                                                <div class="row">
+                                                    <div class="col">
+                                                        <ng-container *ngIf="chartOptions1">
+                                                            <highcharts-chart *ngIf="isHighcharts"
+                                                                [Highcharts]="Highcharts"
+                                                                [constructorType]="chartConstructor"
+                                                                [options]="chartOptions1" style="
+                                  width: 100%;
+                                  height: auto;
+                                  min-width: 15em;
+                                  display: block;
+                                ">
+                                                            </highcharts-chart>
+                                                        </ng-container>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </ng-template>
+                        </mat-tab>
+                        <mat-tab label="Top News">
+                            <mat-spinner diameter="50" *ngIf="!news"></mat-spinner>
+                            <ng-template matTabContent>
+                                <div class="container-fluid" *ngFor="
+                    let article of news;
+                    let e = even;
+                    let i = index;
+                    let isLast = last
+                  ">
+                                    <div class="row" *ngIf="e && !isLast">
+                                        <div class="col-lg">
+                                            <div class="card bg-light mynewscards"
+                                                (click)="openNewsModal(newscontent, article)"
+                                                style="width: 100%; height: 100%">
+                                                <div class="container mt-0">
+                                                    <div class="row">
+                                                        <div
+                                                            class="col-sm-6 col-md-6 col-lg-5 col-xl-4 m-0 pl-3 pr-3 pt-3 pb-0 pb-sm-3 pr-3 pr-sm-3 my-auto">
+                                                            <img class="card-img"
+                                                                style="width: 100%; height: auto; float: middle"
+                                                                src="{{ article.image }}" alt="image" />
+                                                        </div>
+                                                        <div class="col-sm-6 col-md-6 col-lg-7 col-xl-8 m-0 p-0">
+                                                            <div class="card-body pt-0 pt-sm-3 pl-3 pl-sm-0">
+                                                                <p class="card-text mat-body-1"
+                                                                    style="width: 100%; height: auto">
+                                                                    {{ article?.headline }}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg mt-4 mt-lg-0">
+                                            <div class="card bg-light mynewscards"
+                                                (click)="openNewsModal(newscontent, news[i + 1])"
+                                                style="width: 100%; height: 100%">
+                                                <div class="container mt-0">
+                                                    <div class="row">
+                                                        <div
+                                                            class="col-sm-6 col-md-6 col-lg-5 col-xl-4 m-0 pl-3 pr-3 pt-3 pb-0 pb-sm-3 pr-3 pr-sm-3 my-auto">
+                                                            <img class="card-img"
+                                                                style="width: 100%; height: auto; float: middle"
+                                                                src="{{ news[i + 1].image }}" alt="image" />
+                                                        </div>
+                                                        <div class="col-sm-6 col-md-6 col-lg-7 col-xl-8 m-0 p-0">
+                                                            <div class="card-body pt-0 pt-sm-3 pl-3 pl-sm-0">
+                                                                <p class="card-text mat-body-1"
+                                                                    style="width: 100%; height: auto">
+                                                                    {{ news[i + 1]?.headline }}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row" *ngIf="e && isLast">
+                                        <div class="col-lg">
+                                            <div class="card bg-light mynewscards"
+                                                (click)="openNewsModal(newscontent, article)"
+                                                style="width: 100%; height: 100%">
+                                                <div class="container mt-0">
+                                                    <div class="row">
+                                                        <div
+                                                            class="col-sm-6 col-md-6 col-lg-5 col-xl-4 m-0 pl-3 pr-3 pt-3 pb-0 pb-sm-3 pb-md-3 pb-lg-3 pb-xl-3 pr-3 pr-sm-3 pr-md-3 pr-lg-2 pr-xl-2 my-auto">
+                                                            <img class="card-img"
+                                                                style="width: 100%; height: auto; float: middle"
+                                                                src="{{ article.image }}" alt="image" />
+                                                        </div>
+                                                        <div class="col-sm-6 col-md-6 col-lg-7 col-xl-8 m-0 p-0">
+                                                            <div class="card-body pt-0 pt-sm-3 pl-3 pl-sm-0">
+                                                                <p class="card-text mat-body-1"
+                                                                    style="width: 100%; height: auto">
+                                                                    {{ article?.headline }}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg"></div>
+                                    </div>
+                                </div>
+                            </ng-template>
+                            <ng-template #newscontent let-modal>
+                                <div class="modal-header flex-column position-relative" style="align-items: start">
+                                    <h1 class="modal-title mb-0" id="modal-basic-title" id="newsSN">
+                                        {{ newsModalContent?.source }}
+                                    </h1>
+                                    <h4 class="modal-subtitle mb-0" id="newsPA">
+                                        {{ newsModalContent?.datetime1 }}
+                                    </h4>
+                                    <button type="button" class="close position-absolute" aria-label="Close"
+                                        (click)="modal.dismiss('Cross click')">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <p class="modal-body-title mb-0">
+                                        {{ newsModalContent?.headline }}
+                                    </p>
+                                    <p class="modal-body-desc mb-0" [innerHTML]="newsModalContent?.summary"></p>
+                                    <p class="modal-body-link">
+                                        For more details click&nbsp;<a href="{{ newsModalContent.url }}"
+                                            target="_blank">here</a>
+                                    </p>
+                                    <div class="container mt-5 ml-0 mr-3 pl-0 pr-0" style="text-align: center">
+                                        <div class="card modalcard" style="width: 100%; height: 100%">
+                                            <div class="container1">
+                                                <div class="row pl-3">
+                                                    <p id="share" style="text-align:start;">Share</p>
+                                                </div>
+                                                <div class="row pl-3 mb-3">
+                                                    <a class="twitter-share-button" href="{{ tweetURL }}"
+                                                        (click)="twitterURL()" target="_blank" style="width: 0%;margin-right: 10%;">
+                                                        <i class="fa fa-twitter fa-3x" aria-hidden="true"
+                                                            style="color: #3a91f9"></i>
+                                                    </a>
+                                                    
+                                                    <a target="_blank" href="https://www.facebook.com/sharer/sharer.php?u={{
+                              newsModalContent?.url
+                            }}&amp;src=sdkpreparse" class="fb-xfbml-parse-ignore" style="width: 0%;margin-right: 10%;">
+                                                        <i class="fa fa-facebook-square fa-3x" aria-hidden="true"
+                                                            style="color: blue"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-dark" (click)="modal.close('Save click')">Save</button>	
+                    </div>
+    -->
+                            </ng-template>
+                        </mat-tab>
+                        <mat-tab label="Charts">
+                            <mat-spinner diameter="50" *ngIf="!historicalData"></mat-spinner>
+                            <ng-template matTabContent>
+                                <ng-container *ngIf="chartOptions2">
+                                    <highcharts-chart *ngIf="isHighcharts" [Highcharts]="Highcharts"
+                                        [constructorType]="chartConstructor" [options]="chartOptions2" style="
+                      width: 100%;
+                      height: 45em;
+                      display: block;
+                      margin-top: 2em;
+                    ">
+                                    </highcharts-chart>
+                                </ng-container>
+                            </ng-template>
+                        </mat-tab>
+                        <mat-tab label="Insights">
+                            <div class="container-fluid pl-0 pr-0 text-middle mat-typography">
+                                <div class="row">
+                                    <div class="col-xs-12 col-md-12 col-sm-12 col-xl-12 col-lg-12"
+                                        style="overflow-x: hidden">
+                                        <h2 style="margin-top: 2em">Social Sentiments</h2>
+                                        <table class="table text-nowrap" style="width: 60%">
+                                            <thead class="thead-light">
+                                                <tr>
+                                                    <th scope="col" class="tableCol">{{ desc?.name }}</th>
+                                                    <th scope="col">Reddit</th>
+                                                    <th scope="col">Twitter</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <th scope="row" class="tableCol">Total Mentions</th>
+                                                    <td>{{ redditMention }}</td>
+                                                    <td>{{ twitterMention }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th scope="row" class="tableCol">Positive Mention</th>
+                                                    <td>{{ redditPositive }}</td>
+                                                    <td>{{ twitterPositive }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th scope="row" class="tableCol">Negative Mention</th>
+                                                    <td>{{ redditNegative }}</td>
+                                                    <td>{{ twitterNegative }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 col-sm-6 col-xl-6 col-lg-6" style="overflow-x: hidden">
+                                        <div class="container-fluid">
+                                            <div class="row">
+                                                <div class="col">
+                                                    <ng-container *ngIf="chartOptions3">
+                                                        <highcharts-chart [Highcharts]="Highcharts"
+                                                            [options]="chartOptions3" 
+                                                            style="
+                                max-width: 100%;
+                                height: auto;
+                                min-width: 15em;
+                                display: block;
+                              ">
+                                                        </highcharts-chart>
+                                                    </ng-container>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-sm-6 col-xl-6 col-lg-6" style="overflow-x: hidden">
+                                        <div class="container-fluid">
+                                            <div class="row">
+                                                <div class="col">
+                                                    <ng-container *ngIf="chartOptions">
+                                                        <highcharts-chart [Highcharts]="Highcharts"
+                                                            [options]="chartOptions" style="
+                                max-width: 100%;
+                                height: auto;
+                                min-width: 15em;
+                                display: block;
+                              ">
+                                                        </highcharts-chart>
+                                                    </ng-container>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </mat-tab>
+                    </mat-tab-group>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <ng-template #buycontent let-modal id="buyModal">
+        <div class="modal-header">
+            <p>{{ desc?.ticker }}</p>
+            <button type="button" class="close position-absolute" aria-label="Close"
+                (click)="modal.dismiss('Cross click')">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body ml-3">
+            <p class="mb-1">Current Price: {{ latestPrice?.c | number: "1.2-2" }}</p>
+            <p class="mb-1">Money in Wallet ${{ wallet | number: "1.2-2" }}</p>
+            <form>
+                <div class="row">
+                    <div class="col-sm-2 my-auto">
+                        <label for="qty">Quantity&nbsp;</label>
+                    </div>
+                    <div class="col-sm-5 pl-sm-0">
+                        <input type="number" [formControl]="modalQty" min="0" step="1"
+                            oninput="validity.valid||(value='');" class="form-control mt-0" id="qty" name="qty"
+                            value="0" ngbAutofocus />
+                    </div>
+                </div>
+                <div class="row">
+                    <div *ngIf="modalQty?.value < 0 || modalTotal > modalMaxBuy" class="text-danger col">
+                        Not enough money in the wallet!
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer p-2 pl-3" style="align-content: left">
+            <p class="mr-auto pt-2">Total : {{ modalTotal | number: "1.2-2" }}</p>
+            <button type="button" class="btn btn-success" id="finalBuy" [disabled]="
+          modalQty?.value <= 0 ||
+          modalMaxBuy < modalTotal ||
+          !regex.test(modalQty?.value)
+        " (click)="modal.dismiss('Cross click')">
+                Buy
+            </button>
+        </div>
+    </ng-template>
+
+    <ng-template #sellcontent let-modal id="sellModal">
+        <div class="modal-header">
+            <p>{{ desc?.ticker }}</p>
+            <button type="button" class="close position-absolute" aria-label="Close"
+                (click)="modal.dismiss('Cross click')">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body ml-3">
+            <p class="mb-1">Current Price: {{ latestPrice?.c | number: "1.2-2" }}</p>
+            <p class="mb-1">Money in Wallet ${{ wallet | number: "1.2-2" }}</p>
+            <form>
+                <div class="row">
+                    <div class="col-sm-2 my-auto">
+                        <label for="sellQty">Quantity&nbsp;</label>
+                    </div>
+                    <div class="col-sm-5 pl-sm-0">
+                        <input type="number" [formControl]="modalQty" min="0" step="1"
+                            oninput="validity.valid||(value='');" class="form-control mt-0" id="sellQty" name="qty"
+                            value="0" ngbAutofocus />
+                    </div>
+                </div>
+                <div class="row">
+                    <div *ngIf="modalQty?.value < 0 || modalQty?.value > modalMaxSellQty" class="text-danger col">
+                        You cannot sell the stocks that you don't have!
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer p-2 pl-3" style="align-content: left">
+            <p class="mr-auto pt-2">Total : {{ modalTotal | number: "1.2-2" }}</p>
+            <button type="button" class="btn btn-danger" id="finalSell" [disabled]="
+          modalQty?.value <= 0 ||
+          modalQty?.value > modalMaxSellQty ||
+          !regex.test(modalQty?.value)
+        " (click)="modal.dismiss('Cross click')">
+                Sell
+            </button>
+        </div>
+    </ng-template>
+
+    <!-- in case ticker is invalid -->
+    <div *ngIf="!isTValid" class="alert alert-danger mat-body-1 w-responsive text-center mx-auto mt-5"
+        id="invalid-ticker" role="alert">
+        No results found. Please enter valid Ticker
+    </div>
+</div>

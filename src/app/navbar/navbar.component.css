@@ -1,0 +1,25 @@
+.navbar {
+	background-color: #1e209b;
+	position: fixed;
+	top: 0;
+	width:100%
+/*	background-color: #673ab7;*/
+}
+
+.navbar-nav {
+	font-size: small;
+	margin-right: 1.3%;
+}
+
+.nav-item {
+	padding-left: 2%;
+	padding-right: 2%;
+	text-align: right;
+}
+
+.nav-item.active {
+	border:1px solid #fff;
+	/*outline: none;*/
+	border-radius:0.6em;
+	/*box-shadow: 0 0 0 1px #fff;*/
+}

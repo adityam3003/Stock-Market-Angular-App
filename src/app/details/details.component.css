@@ -1,0 +1,358 @@
+.mat-display-3 {
+	font-family: 'Hind', sans-serif;
+	font-weight: 700;
+	font-size: 2em;
+	text-align: center;
+	margin: 3vh 0 5vh;
+	z-index: 6;
+}
+
+.form-group {
+	margin: 0;
+	position: absolute;
+	width: 14.3em;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	outline: none;
+	box-shadow: 0 0 0 2.5px #1e209b; /*0.15em*/
+	border-radius: 25px;
+}
+
+/* #rmWl {
+	margin-top: 1em;
+} */
+
+input:focus {
+	box-shadow: none;
+}
+
+input[type="text"] {
+	outline: none;
+	border: transparent;
+	border-radius: 25px;
+	font-size: small;
+	padding-left: 0.8em;
+}
+
+.mat-button {
+	position: absolute;
+	top: 0.05em;
+	right: 0.9em;
+	border-style: none;
+
+}
+
+.mat-button:focus, .mat-button:active {
+	outline: none !important;
+	border:none;
+	border-radius: 0.2em;
+}
+
+.bi-search {
+	margin-left: -7em; 
+	/* margin-right: 2.5em; */
+	margin-top: 0.5em; 
+	margin-bottom: 0.5em;
+	vertical-align: middle;
+	display: inline-block;
+}
+
+.bi-x {
+	margin-left: 0.5em; 
+	margin-right: -0.5em;
+	
+	vertical-align: middle;
+	display: inline-block;
+}
+
+
+
+#my-master-container {
+	padding: 0;
+	min-width: 72%;
+  width: calc((26em - 100%) * 1000);
+  max-width: 85%;
+  margin-top: 6.5em;
+  
+}
+
+#invalid-ticker {
+  color: black;
+  font-weight: 300;
+	min-width: 72%;
+  width: calc((30em - 100%) * 1000);
+  max-width: 95%;
+}
+.container  {
+	margin: 0;
+	/* padding-right: 0; */
+	/* margin-right: 100px; */
+  /* margin-top: 8em; */
+}
+
+.container1  {
+  margin: 0;
+  margin-top: 1em;
+  margin-left: 0.5em;
+}
+
+.container2  {
+  margin: 0;
+  margin-top: 1em;
+	/* margin-left: -0.5em; */
+}
+.container-fluid {
+	margin-top: 2em;
+}
+
+
+/*to remove the pagination buttons that sometimes came*/
+/* ::ng-deep .mat-tab-header-pagination {
+    display: none !important;
+} */
+
+.mat-tab-label-container {
+    display: flex;
+    flex-grow: 1;
+    /* overflow: hidden; */
+    z-index: 1;
+    overflow-x: scroll !important;
+}
+
+#sell{
+	margin-left: 0.4em;
+}
+
+#high, #mid, #low, #askP, #askS, #bidP, #bidS, #open, #prevClose, #vol {
+    display: inline-block;
+    position: absolute;
+}
+
+.myrow1 .mat-display-1, .myrow2 .mat-headline, .myrow3 .mat-body-2 {
+	font-family: 'Hind';
+}
+
+.myrow1 .mat-display-1, .myrow2 .mat-headline, .myrow3 .mat-body-2 {
+	margin: 0;
+}
+
+#descHead {
+	margin-top: 0% ;
+    text-align: center;
+}
+#priceSummary {
+	margin-top: 0%;
+	text-align: center;
+	padding-left: 10px;
+}
+
+.myrow1 .mat-display-1 {
+	font-size: 3em;
+	font-weight: 500;
+}
+
+.myrow3 .mat-body-2 {
+	font-weight: normal;
+}
+
+.toLeft {
+	margin: 0 !important;
+	padding-left: 0 !important;
+	text-align: left;
+}
+
+.toRight {
+	margin: 0;
+	padding-right: 0 !important;
+	text-align: right;
+}
+#changeAndAllP {
+	display:inline-block;
+}
+
+#ticker, .bi-star {
+	text-align: left;
+	display:inline-block;
+	margin:0;
+	padding: 0;
+}
+
+#openclose {
+	padding: 0;
+	display: inline-block;
+	border: none;
+	border-radius: 0;
+	font-weight: 500;
+}
+
+.mynewscards {
+		cursor: pointer;
+}
+.mynewscards .card-body {
+	text-align: left;
+}
+
+.modal-title {
+		font-weight: 400;
+		font-size: 2em;
+}
+
+.modal-subtitle {
+		font-size: 1em;
+		font-weight: bold;
+		color: grey;
+}
+
+.close {
+		right: 0.5em;
+}
+
+.modal-body-title {
+		font-size: 1.3em;
+		font-weight: 500;
+}
+
+.modal-body-link {
+		color: grey;
+}
+
+button[aria-label="Close"]:focus {
+  outline: none;
+}
+
+#qty {
+	padding: 0.4em;
+	padding-left: 0.6em;
+}
+
+/*fonts*/
+#ticker, #compName, #exchangeCode, #descHead {
+	font-family: 'Hind', sans-serif;
+}
+
+ #last, #changeAndAllP, #currentTime {
+	font-family: 'Average Sans', sans-serif;
+}
+
+#ticker {
+	font-size: 2.5em;
+}
+
+#last {
+	font-size: 2.5em;
+}
+
+#compName {
+	font-size: 1.7em;
+}
+
+#descHead {
+	font-size: 1.3em;
+	font-weight: 500;
+}
+
+#newsSN, #newsPA {
+	font-family: 'Roboto', sans-serif;
+}
+
+#newsPA {
+	font-weight: 500;
+	font-size: 1.1em;
+}
+
+.col-12 {
+	z-index: 0;
+}
+
+.tableCol {
+	background:#e9ecef;
+}
+
+.table {
+	width: 60%;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.tickerStar {
+	display: flex;
+}
+
+
+
+
+
+@media (min-width: 600px) {
+    .deskContent {
+		display:block;}
+    .phoneContent {
+		display:none;
+	}
+}
+
+@media (max-width: 599px) {
+    .deskContent {
+		display:none;
+	}
+    .phoneContent {
+		display:block;
+	}
+}
+
+
+#ticker1 {
+	font-size: 1.6em;
+	font-weight: 500;
+	font-family: 'Hind', sans-serif;
+}
+
+#compName1 {
+	font-size: 1.2em;
+	font-family: 'Hind', sans-serif;
+	
+}
+
+#exchangeCode1 {
+	font-size: 0.8em;
+	font-family: 'Hind', sans-serif;
+	font-weight: 500;
+}
+
+#last1 {
+	font-size: 1.6em;
+	font-weight: 500;
+	font-family: 'Hind', sans-serif;
+	line-height: 1.2em;
+
+}
+
+#changeAndAllP1 {
+	font-size: 1.2em;
+	font-family: 'Hind', sans-serif;
+	display:inline-block;
+
+}
+
+#currentTime1 {
+	font-size: 0.8em;
+	font-family: 'Hind', sans-serif;
+
+}
+
+#logo1 {
+	width: 0.3em;
+	height: auto;
+	padding: 0;
+	
+}
+
+.line {
+	/* display: inline-flex; */
+	text-align: right;
+	float: right;
+	
+}
+
+#currentTime1, #logo1, #changeAndAllP1, #ticker1, #compName1, #exchangeCode1 {
+	line-height: 1.2em;
+}

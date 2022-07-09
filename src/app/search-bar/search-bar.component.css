@@ -1,0 +1,77 @@
+.mat-display-3 {
+	font-family: 'Hind', sans-serif;
+	font-weight: 700;
+	font-size: 2em;
+	text-align: center;
+	margin: 3vh 0 5vh;
+	z-index: 6;
+}
+
+.form-group {
+	margin: 0;
+	position: absolute;
+	width: 14.3em;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	outline: none;
+	box-shadow: 0 0 0 2.5px #1e209b; /*0.15em*/
+	border-radius: 25px;
+}
+
+input:focus {
+	box-shadow: none;
+	outline: none;
+	border: none;
+}
+
+input[type="text"] {
+	outline: none;
+	border: none;
+	border-radius: 25px;
+	font-size: small;
+	padding-left: 0.8em;
+}
+
+.mat-button {
+	position: absolute;
+	top: 0.05em;
+	right: 0.5em;
+	border-style: none;
+}
+
+.mat-button:focus, .mat-button:active {
+	outline: none !important;
+	border:none;
+	border-radius: 0.2em;
+}
+
+.bi-search {
+	margin-left: -7em; 
+	/* margin-right: 2.5em; */
+	margin-top: 0.5em; 
+	margin-bottom: 0.5em;
+	vertical-align: middle;
+	display: inline-block;
+	
+}
+
+.bi-x {
+	margin-left: 0.5em; 
+	margin-right: -0.5em;
+	
+	vertical-align: middle;
+	display: inline-block;
+	box-shadow: none;
+	border: none;
+
+}
+
+#s-invalid-ticker {
+	color: black;
+	font-weight: 300;
+	  min-width: 72%;
+	width: calc((30em - 100%) * 1000);
+	max-width: 95%;
+	top: 20%;
+  }
+

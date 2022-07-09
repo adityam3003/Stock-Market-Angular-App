@@ -1,0 +1,23 @@
+<nav class="navbar navbar-expand-lg navbar-dark" style="position: fixed; z-index: 1; width: 100%;">
+    <a class="navbar-brand" (click) = "setIsCollapsedTrue('search/home', $event);" href="/">Stock Search</a>
+    <button (click)="isCollapsed = !isCollapsed" class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div [ngbCollapse]="isCollapsed" class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav ml-auto">
+            <li *ngIf="!isSearched" class="nav-item" id="search">
+                <a class="nav-link" (click) = "setIsCollapsedTrue('search/home', $event);" href="/search/home">Search</a>
+            </li>
+            <li *ngIf="isSearched" class="nav-item active" id="search">
+                <a class="nav-link" (click) = "setIsCollapsedTrue('search/'+tickerValue, $event);" href="/search/{{tickerValue}}">Search</a>
+            </li>
+            <li class="nav-item" id="watchlist">
+                <a class="nav-link" (click) = "setIsCollapsedTrue('watchlist', $event);" href="/watchlist">Watchlist</a>
+            </li>
+            <li class="nav-item" id="portfolio">
+                <a class="nav-link" (click) = "setIsCollapsedTrue('portfolio', $event);" href="/portfolio">Portfolio</a>
+            </li>
+        </ul>
+    </div>
+</nav>
